@@ -5,8 +5,6 @@ library(ggplot2)
 if (!require(phytotools)) install.packages('phytotools')
 library(phytotools)
 
-### Statistical analysis of data obtained in experiments
-
 ### Fresh biomass ###
 
 ## 1. Importing data
