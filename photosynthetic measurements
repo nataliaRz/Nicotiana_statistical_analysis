@@ -1,4 +1,11 @@
-### Photosynthetic parameters
+if (!require(ggplot2)) install.packages('ggplot2')
+library(ggplot2)
+if (!require(phytotools)) install.packages('phytotools')
+library(phytotools)
+if (!require(ggpubr)) install.packages('ggpubr')
+library(ggpubr)
+
+### Photosynthetic parameters ###
 
 ## reading the measurements form .csv files imported form WinControl software
 
@@ -59,10 +66,81 @@ photo_data$qP <- as.numeric(photo_data$qP)
 photo_data$ETR <- as.numeric(photo_data$ETR)
 photo_data$Y <- as.numeric(photo_data$Y)
 
-## extracting 
+## extracting data for N. obtusifolia
 O_data <- subset(photo_data, species == "O")
 O_data$treatment <- relevel(O_data$treatment, ref = "LL")
 
-mod1 <- lm(O_data$Fv_Fm ~ O_data$treatment*O_data$ploidy)
+
+## linear models for N. obtusifolia ###
+
+mod1 <- lm(O_data$Fv_Fm ~ O_data$treatment * O_data$ploidy)
 summary(mod1)
+plot(mod1)
+
+mod2 <- lm(O_data$ETR_max ~ O_data$treatment * O_data$ploidy)
+summary(mod2)
+plot(mod2)
+
+mod3 <- lm(O_data$alpha ~ O_data$treatment * O_data$ploidy)
+summary(mod3)
+plot(mod3)
+
+mod4 <- lm(O_data$NPQ ~ O_data$treatment * O_data$ploidy)
+summary(mod4)
+plot(mod4)
+
+mod5 <- lm(O_data$qP ~ O_data$treatment * O_data$ploidy)
+summary(mod5)
+plot(mod5)
+
+mod6 <- lm(O_data$ETR ~ O_data$treatment * O_data$ploidy)
+summary(mod6)
+plot(mod6)
+
+mod7 <- lm(O_data$Y(II) ~ O_data$treatment * O_data$ploidy)
+summary(mod7)
+plot(mod7)
+
+mod8 <- lm(O_data$Ek ~ O_data$treatment * O_data$ploidy)
+summary(mod8)
+plot(mod8)
+
+### Linear models for N. attenuata ###
+
+A_data <- subset(photo_data, species == "A")
+A_data$treatment <- relevel(A_data$treatment, ref = "LL")
+
+mod9 <- lm(A_data$NPQ ~ A_data$treatment * A_data$ploidy)
+summary(mod9)
+plot(mod9)
+
+mod10 <- lm(A_data$qP ~ A_data$treatment * A_data$ploidy)
+summary(mod10)
+plot(mod10)
+
+mod11 <- lm(A_data$Ek ~ A_data$treatment * A_data$ploidy)
+summary(mod11)
+plot(mod11)
+
+mod12 <- lm(A_data$ETR_max ~ A_data$treatment * A_data$ploidy)
+summary(mod12)
+plot(mod12)
+
+mod13 <- lm(A_data$ETR ~ A_data$treatment * A_data$ploidy)
+summary(mod13)
+plot(mod13)
+
+mod14 <- lm(A_data$Y(II) ~ A_data$treatment * A_data$ploidy)
+summary(mod14)
+plot(mod14)
+
+mod15 <- lm(A_data$alpha ~ A_data$treatment * A_data$ploidy)
+summary(mod15)
+plot(mod15)
+
+mod16 <- lm(A_data$Fv_Fm ~ A_data$treatment * A_data$ploidy)
+summary(mod16)
+plot(mod16)
+
+
 
