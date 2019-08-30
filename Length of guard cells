@@ -1,8 +1,19 @@
-### guard cells length analysis ###
+### Guard cells length statistical analysis ###
 
+if (!require(ggplot2)) install.packages('ggplot2')
+library(ggplot2)
+if (!require(phytotools)) install.packages('phytotools')
+library(phytotools)
+if (!require(ggpubr)) install.packages('ggpubr')
+library(ggpubr)
+
+## Importing data
 files <- list.files("../Desktop/measurements",
                          pattern = c(".tab"),
                          full.names = TRUE)
+
+## extracting measurements form Openlab reports ##
+## file names pattern: HH_NO_2x_1.tab 
 
 guard_cell_df <- data.frame()
 num <- 0
@@ -21,12 +32,11 @@ for (file in files){
   guard_cell_df <- rbind(df_2, guard_cell_df)
   
 }
-
+## renaming column in new data frame ##
 colnames(guard_cell_df) <- c("mean_length", "species", "ploidy", "treatment")
 
-## visualisation
+## visualisation for both species ##
 
-library(ggplot2)
 p11 <- ggplot(guard_cell_df, aes(x=interaction(ploidy, treatment), y=mean_length, fill = ploidy)) + geom_boxplot() 
 + labs(y = "Length of stomata [ug]", x = "Treatment")
 
@@ -50,6 +60,8 @@ NA_data$treatment <- as.factor(NA_data$treatment)
 NA_data$treatment <- relevel(NA_data$treatment, ref = "LL")
 mod1 <- lm(NA_data$mean_length ~ NA_data$treatment * NA_data$ploidy)
 summary(mod1)
+
+# diagnostic plots
 plot(mod1)
 
 ## Linear model for Nicotiana obtusifolia
@@ -60,5 +72,7 @@ NO_data$treatment <- as.factor(NO_data$treatment)
 NO_data$treatment <- relevel(NO_data$treatment, ref = "LL")
 mod2 <- lm(NO_data$mean_length ~ NO_data$treatment*NO_data$ploidy)
 summary(mod2)
+
+# diagnostic plots
 plot(mod2)
 
