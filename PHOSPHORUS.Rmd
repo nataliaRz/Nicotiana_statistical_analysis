@@ -1,12 +1,12 @@
 ---
-title: "Phosphorus"
+title: "Phosphate concentration analysis"
 output: html_notebook
 ---
 
 ```{r}
 library(ggplot2)
 
-## Early samples #1
+## Early samples
 
 PO4 <- read.csv(file = "../Desktop/data/po4.csv")
 PO4$PLOIDY <- as.factor(PO4$PLOIDY)
@@ -42,7 +42,6 @@ A_data_po4_e$TREATMENT <- relevel(A_data_po4_e$TREATMENT, ref = "LL")
 mod20 <- lm(A_data_po4_e$concentraction ~ A_data_po4_e$TREATMENT*A_data_po4_e$PLOIDY)
 summary(mod20)
 
-drop1(mod20, test = "F")
 ```
 
 
@@ -55,7 +54,6 @@ O_data_po4_e$TREATMENT <- relevel(O_data_po4_e$TREATMENT, ref = "LL")
 mod21 <- lm(O_data_po4_e$concentraction ~ O_data_po4_e$PLOIDY*O_data_po4_e$TREATMENT)
 summary(mod21)
 
-drop1(mod21, test = "F")
 ```
 
 
