@@ -1,0 +1,189 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+## EARLY samples
+
+nitrogen_L <- read.table(file="../Desktop/nitrogen_2/NATALIA_NICOTIANA_2_EARLYSAMPLES.prn", header = T)
+INFO_L <- read.csv(file = "../Desktop/INFO_L.csv", header = T)
+
+INFO_L$ploidy <- as.factor(INFO_L$ploidy)
+
+nitrogen_L$treatment <- INFO_L$treatment
+nitrogen_L$ploidy <- INFO_L$ploidy
+nitrogen_L$species <- INFO_L$species
+nitrogen_L$id <- INFO_L$id
+
+```
+
+```{r}
+for (n in seq(1, nrow(nitrogen_L), 1)){
+  a <- nitrogen_L[n, 5]/nitrogen_L[n, 3]
+  nitrogen_L[n, 21] <- a
+}
+
+colnames(nitrogen_L)[21] <- "concentration"
+```
+
+
+```{r}
+p9 <- ggplot(nitrogen_L, aes(x=interaction(ploidy, treatment), y=concentration, fill = ploidy)) + geom_boxplot()  + labs(y = "Nitrogen [µg/mg of leaf tissue]", x = "Treatment") + scale_fill_discrete(name="Ploidy", breaks=c("2", "4"), labels=c("2x", "4x"))
+
+
+species.labs <- c("N. attenuata", "N. obtusifolia")
+names(species.labs) <- c("A", "O")
+
+# Create the plot
+p9 + facet_grid(. ~ species, labeller = labeller(species = species.labs)) + theme(strip.text.x = element_text(size = 11, face = "bold.italic")) + scale_x_discrete(breaks=c("2.HH","4.HH","2.HL","4.HL","2.LH", "4.LH", "2.LL", "4.LL", "2.HH","4.HH","2.HL","4.HL","2.LH", "4.LH", "2.LL", "4.LL"), labels=c("H:H", "H:H", "H:L", "H:L", "L:H", "L:H", "L:L", "L:L", "H:H", "H:H", "H:L", "H:L", "L:H", "L:H", "L:L", "L:L" ))
+
+```
+
+
+```{r}
+O_nitrogen_L <- subset(nitrogen_L, species == "O")
+O_nitrogen_L$treatment <- relevel(O_nitrogen_L$treatment, ref = "LL")
+mod9 <- lm(O_nitrogen_L$concentration ~ O_nitrogen_L$treatment*O_nitrogen_L$ploidy)
+summary(mod9)
+
+
+```
+
+```{r}
+A_nitrogen_L <- subset(nitrogen_L, species == "A")
+A_nitrogen_L$treatment <- relevel(A_nitrogen_L$treatment, ref = "LL")
+mod9 <- lm(A_nitrogen_L$concentration ~ A_nitrogen_L$treatment*A_nitrogen_L$ploidy)
+summary(mod9)
+
+drop1(mod9, test = "F")
+```
+
+```{r}
+## LATE samples
+
+nitrogen_e <- read.table(file="../Desktop/nitrogen/NICOTIANA_NITROGEN_LATESAMPLES.prn", header = T)
+INFO_E <- read.csv(file = "../Desktop/INFO.csv", header = T)
+
+nitrogen_e$treatment <- INFO_E$treatment
+nitrogen_e$ploidy <- INFO_E$ploidy
+nitrogen_e$species <- INFO_E$species
+nitrogen_e$id <- INFO_E$id
+
+nitrogen_e$ploidy <- as.factor(nitrogen_e$ploidy)
+```
+
+```{r}
+for (n in seq(1, nrow(nitrogen_e), 1)){
+  a <- nitrogen_e[n, 5]/nitrogen_e[n, 3]
+  nitrogen_e[n, 21] <- a
+}
+
+colnames(nitrogen_e)[21] <- "concentration"
+```
+
+
+```{r}
+p8 <- ggplot(nitrogen_e, aes(x=interaction(ploidy, treatment), y=concentration, fill = ploidy)) + geom_boxplot() + labs(y = "Nitrogen [µg/mg of leaf tissue]", x = "Treatment") + scale_fill_discrete(name="Ploidy", breaks=c("2", "4"), labels=c("2x", "4x"))
+
+species.labs <- c("N. attenuata", "N. obtusifolia")
+names(species.labs) <- c("A", "O")
+
+# Create the plot
+p8 + facet_grid(. ~ species, labeller = labeller(species = species.labs)) + theme(strip.text.x = element_text(size = 11, face = "bold.italic")) + scale_x_discrete(breaks=c("2.HH","4.HH","2.HL","4.HL","2.LH", "4.LH", "2.LL", "4.LL", "2.HH","4.HH","2.HL","4.HL","2.LH", "4.LH", "2.LL", "4.LL"), labels=c("H:H", "H:H", "H:L", "H:L", "L:H", "L:H", "L:L", "L:L", "H:H", "H:H", "H:L", "H:L", "L:H", "L:H", "L:L", "L:L" ))
+
+```
+
+```{r}
+O_nitrogen_e <- subset(nitrogen_e, species == "O")
+
+O_nitrogen_e$treatment <- relevel(O_nitrogen_e$treatment, ref = "LL")
+mod9 <- lm(O_nitrogen_e$concentration ~ O_nitrogen_e$treatment*O_nitrogen_e$ploidy)
+summary(mod9)
+
+drop1(mod9, Test ="F")
+```
+
+```{r}
+A_nitrogen_e <- subset(nitrogen_e, species == "A")
+A_nitrogen_e$treatment <- relevel(A_nitrogen_e$treatment, ref = "LL")
+mod9 <- lm(A_nitrogen_e$concentration ~ A_nitrogen_e$treatment*A_nitrogen_e$ploidy)
+summary(mod9)
+drop1(mod9, test = "F")
+```
+
+```{r}
+#model for all nitrogen data
+
+nr <- nrow(nitrogen_L)
+s_type <- rep("late", nr)
+nitrogen_L$type <- s_type
+
+nr <- nrow(nitrogen_e)
+s_type <- rep("early", nr)
+nitrogen_e$type <- s_type
+
+
+nitrogen_all_data <- rbind(nitrogen_L, nitrogen_e)
+
+```
+
+```{r}
+## Nitrogen/g of biomass for all samples ##
+
+
+for (n in seq(1, nrow(nitrogen_all_data), 1)){
+ for (l in seq(1, nrow(biomass_2), 1)){
+   if (nitrogen_all_data[n, 17] == biomass_2[l, 1] & nitrogen_all_data[n, 18] == biomass_2[l, 2] & nitrogen_all_data[n, 19] == biomass_2[l, 3] & nitrogen_all_data[n, 20] == biomass_2[l, 6]){
+     nitrogen_all_data[n, 23] <- biomass_2[l, 4]
+     
+   }
+ }
+}
+
+colnames(nitrogen_all_data)[23] <- "biomass"
+
+total_N <- c()
+
+for (n in seq(1, nrow(nitrogen_all_data), 1)){
+  a <- nitrogen_all_data[n, 21]*nitrogen_all_data[n, 23]
+  total_N <- c(total_N, a)
+}
+
+nitrogen_all_data$total_N <- total_N
+
+```
+
+```{r}
+nitrogen_early <- subset(nitrogen_all_data, type == "early")
+nitrogen_early_o <- subset(nitrogen_all_data, type == "early" & species == "O")
+nitrogen_early_a <- subset(nitrogen_all_data, type == "early" & species == "A")
+```
+
+```{r}
+p17 <- ggplot(nitrogen_early, aes(x=interaction(ploidy, treatment), y=total_N, fill = ploidy)) + geom_boxplot() + scale_fill_brewer(palette="Set3")  + labs(y = "Nitrogen [mg/plant]", x = "Treatment") + scale_fill_discrete(name="Ploidy", breaks=c("2", "4"), labels=c("2x", "4x"))
+
+
+species.labs <- c("N. attenuata", "N. obtusifolia")
+names(species.labs) <- c("A", "O")
+
+# Create the plot
+p17 + facet_grid(. ~ species, labeller = labeller(species = species.labs)) + theme(strip.text.x = element_text(size = 11, face = "bold.italic")) + scale_x_discrete(breaks=c("2.HH","4.HH","2.HL","4.HL","2.LH", "4.LH", "2.LL", "4.LL", "2.HH","4.HH","2.HL","4.HL","2.LH", "4.LH", "2.LL", "4.LL"), labels=c("H:H", "H:H", "H:L", "H:L", "L:H", "L:H", "L:L", "L:L", "H:H", "H:H", "H:L", "H:L", "L:H", "L:H", "L:L", "L:L" ))
+
+```
+
+```{r}
+nitrogen_early_o$treatment <- relevel(nitrogen_early_o$treatment, ref = "LL")
+mo <- lm(data = nitrogen_early_o, total_N ~ treatment*ploidy)
+summary(mo)
+
+drop1(mo, test = "F")
+```
+
+```{r}
+nitrogen_early_a$treatment <- relevel(nitrogen_early_a$treatment, ref = "LL")
+ma <- lm(data = nitrogen_early_a, total_N ~ treatment*ploidy)
+summary(ma)
+
+drop1(ma, test = "F")
+```

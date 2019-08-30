@@ -1,0 +1,182 @@
+---
+title: "Phosphorus"
+output: html_notebook
+---
+
+```{r}
+library(ggplot2)
+
+## Early samples #1
+
+PO4 <- read.csv(file = "../Desktop/data/po4.csv")
+PO4$PLOIDY <- as.factor(PO4$PLOIDY)
+
+# calculate phosphate concentration umol/g
+concentraction <- c()
+
+for (n in seq(1, nrow(PO4), 1)){
+  a <- PO4[n, 1]/PO4[n, 5]/1000
+  concentraction <- c(concentraction, a)
+}
+
+PO4$concentraction <- concentraction
+
+# visualisation
+p4 <- ggplot(PO4, aes(x=interaction(PLOIDY, TREATMENT), y=concentraction, fill = PLOIDY)) + geom_boxplot() + labs(y = "Phosphate concentration [μmol/g]", x = "Treatment")
+
+# New facet label names for supp variable
+species.labs <- c("N. attenuata", "N. obtusifolia")
+names(species.labs) <- c("A", "O")
+
+# Create the plot
+p4 + facet_grid(. ~ SPECIES, labeller = labeller(SPECIES = species.labs)) + theme(strip.text.x = element_text(size = 11, face = "bold.italic")) + scale_x_discrete(breaks=c("2.HH","4.HH","2.HL","4.HL","2.LH", "4.LH", "2.LL", "4.LL", "2.HH","4.HH","2.HL","4.HL","2.LH", "4.LH", "2.LL", "4.LL"), labels=c("H:H", "H:H", "H:L", "H:L", "L:H", "L:H", "L:L", "L:L", "H:H", "H:H", "H:L", "H:L", "L:H", "L:H", "L:L", "L:L" ))  + scale_fill_brewer(palette="Set3") + scale_fill_discrete(name="Ploidy", breaks=c("2", "4"), labels=c("2x", "4x"))
+
+```
+
+```{r}
+#Nicotiana attenuata
+
+A_data_po4_e <- subset(PO4, SPECIES == "A")
+A_data_po4_e$TREATMENT <- relevel(A_data_po4_e$TREATMENT, ref = "LL")
+
+mod20 <- lm(A_data_po4_e$concentraction ~ A_data_po4_e$TREATMENT*A_data_po4_e$PLOIDY)
+summary(mod20)
+
+drop1(mod20, test = "F")
+```
+
+
+```{r}
+#Nicotiana obtusifolia
+
+O_data_po4_e <- subset(PO4, SPECIES == "O")
+O_data_po4_e$TREATMENT <- relevel(O_data_po4_e$TREATMENT, ref = "LL")
+
+mod21 <- lm(O_data_po4_e$concentraction ~ O_data_po4_e$PLOIDY*O_data_po4_e$TREATMENT)
+summary(mod21)
+
+drop1(mod21, test = "F")
+```
+
+
+```{r}
+## Late samples
+
+PO4_b <- read.csv(file = "../Desktop/data/PO4_B.csv")
+PO4_b$PLOIDY <- as.factor(PO4_b$PLOIDY)
+
+# calculate concentration umol/g
+
+concentraction <- c()
+
+for (n in seq(1, nrow(PO4_b), 1)){
+  a <- PO4_b[n, 1]/PO4_b[n, 5]/1000
+  concentraction <- c(concentraction, a)
+}
+
+PO4_b$concentraction <- concentraction
+
+PO4_b_outliners <- subset(PO4_b, PO4_b$concentraction < 200)
+
+#visualisation
+p5 <- ggplot(PO4_b_outliners, aes(x=interaction(PLOIDY, TREATMENT), y=concentraction, fill = PLOIDY)) + geom_boxplot() + scale_fill_brewer(palette="Set3") + labs(y = "Phosphate concentration [μmol/g]", x = "Treatment") + scale_fill_discrete(name="Ploidy", breaks=c("2", "4"), labels=c("2x", "4x"))
+
+# New facet label names for supp variable
+species.labs <- c("N. attenuata", "N. obtusifolia")
+names(species.labs) <- c("A", "O")
+
+# Create the plot
+p5 + facet_grid(. ~ SPECIES, labeller = labeller(SPECIES = species.labs)) + theme(strip.text.x = element_text(size = 11, face = "bold.italic")) + scale_x_discrete(breaks=c("2.HH","4.HH","2.HL","4.HL","2.LH", "4.LH", "2.LL", "4.LL", "2.HH","4.HH","2.HL","4.HL","2.LH", "4.LH", "2.LL", "4.LL"), labels=c("H:H", "H:H", "H:L", "H:L", "L:H", "L:H", "L:L", "L:L", "H:H", "H:H", "H:L", "H:L", "L:H", "L:H", "L:L", "L:L" ))
+
+
+```
+
+
+```{r}
+#Nicotiana attenuata
+
+A_data_po4 <- subset(PO4_b_outliners, SPECIES == "A")
+A_data_po4$TREATMENT <- relevel(A_data_po4$TREATMENT, ref = "LL")
+
+mod6 <- lm(A_data_po4$concentraction ~ A_data_po4$TREATMENT*A_data_po4$PLOIDY)
+summary(mod6)
+
+```
+
+
+```{r}
+#Nicotiana obtusifolia
+
+O_data_po4 <- subset(PO4_b_outliners, SPECIES == "O")
+
+O_data_po4$TREATMENT <- relevel(O_data_po4$TREATMENT, ref = "LL")
+
+mod7 <- lm(O_data_po4$concentraction ~ O_data_po4$TREATMENT*O_data_po4$PLOIDY)
+summary(mod7)
+
+drop1(mod7, test = "F")
+```
+
+
+```{r}
+## Phosphate/g of biomass for early samples ##
+
+PO4$biomass <- NULL
+
+for (n in seq(1, nrow(PO4), 1)){
+ for (l in seq(1, nrow(biomass_2), 1)){
+   if (PO4[n, 2] == biomass_2[l, 1] & PO4[n, 4] == biomass_2[l, 2] & PO4[n, 3] == biomass_2[l, 3] & PO4[n, 6] == biomass_2[l, 6]){
+     PO4[n, 8] <- biomass_2[l, 4]
+     
+   }
+ }
+}
+
+colnames(PO4)[8] <- "biomass"
+
+total_po4 <- c()
+
+for (n in seq(1, nrow(PO4), 1)){
+  a <- PO4[n, 8]*PO4[n, 7]
+  total_po4 <- c(total_po4, a)
+}
+
+PO4$total_po4 <- total_po4
+
+```
+
+```{r}
+p14 <- ggplot(PO4, aes(x=interaction(PLOIDY, TREATMENT), y=total_po4, fill = PLOIDY)) + geom_boxplot() + scale_fill_brewer(palette="Set3")+labs(y = "Phosphate concentration [μmol/plant]", x = "Treatment") + scale_fill_discrete(name="Ploidy", breaks=c("2", "4"), labels=c("2x", "4x"))
+
+# New facet label names for supp variable
+species.labs <- c("N. attenuata", "N. obtusifolia")
+names(species.labs) <- c("A", "O")
+
+# Create the plot
+p14 + facet_grid(. ~ SPECIES, labeller = labeller(SPECIES = species.labs)) + theme(strip.text.x = element_text(size = 11, face = "bold.italic")) + scale_x_discrete(breaks=c("2.HH","4.HH","2.HL","4.HL","2.LH", "4.LH", "2.LL", "4.LL", "2.HH","4.HH","2.HL","4.HL","2.LH", "4.LH", "2.LL", "4.LL"), labels=c("H:H", "H:H", "H:L", "H:L", "L:H", "L:H", "L:L", "L:L", "H:H", "H:H", "H:L", "H:L", "L:H", "L:H", "L:L", "L:L" ))
+
+```
+
+```{r}
+#Nicotiana obtusifolia
+
+O_data_po4_total <- subset(PO4, SPECIES == "O")
+O_data_po4_total$TREATMENT <- relevel(O_data_po4_total$TREATMENT, ref = "LL")
+
+model_total_o <- lm(O_data_po4_total$total_po4 ~ O_data_po4_total$TREATMENT*O_data_po4_total$PLOIDY)
+summary(model_total_o)
+
+drop1(model_total_o, test ="F")
+```
+
+```{r}
+#Nicotiana attenuata
+
+A_data_po4_total <- subset(PO4, SPECIES == "A")
+A_data_po4_total$TREATMENT <- relevel(A_data_po4_total$TREATMENT, ref = "LL")
+
+model_total_a <- lm(A_data_po4_total$total_po4 ~ A_data_po4_total$TREATMENT*A_data_po4_total$PLOIDY)
+summary(model_total_a)
+
+plot(model_total_a)
+```
