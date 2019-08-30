@@ -1,0 +1,68 @@
+### Photosynthetic parameters
+
+## reading the measurements form .csv files imported form WinControl software
+
+# preparing a list of files
+files <- list.files(path = "../Desktop/results/data_for_visualisation_rlc",
+                          pattern = ".csv", ignore.case = T, full.names = T)
+
+## curve fitting
+# ETRmax, Ek and alfa are obtained using phytotools library
+
+photo_data <- data.frame()
+
+for (f in files) {
+  info <- data.frame()
+  
+  # reading all files 
+  df <- read.csv(f, sep = ",")
+  colnames(df) <- c("Time", "Date", "Time2", "Type", "No.", "F", "Fm'", "PAR", "Temp", "Y", "ETR", "Fo'", "ETR-F", "qP", "qN", "qL", "NPQ", "Y-NO", "Y-NPQ", "Fo", "Fm", "Fv_Fm")
+  
+  # extracting ETR and PAR data used for fitting RLC
+  ETR_values <- df$ETR
+  PAR_values <- df$PAR
+  
+  # method given in Platt et al. (1980)
+  fit_low_JP <- fitJP(PAR_values, ETR_values, fitmethod = "Marq")
+  ETR_max <- fit_low_JP$alpha[1]*fit_low_JP$ek[1]
+  
+  # extracting information on treatment, ploidy level, species and plant id
+  # from names of files, pattern used in file names: treatment species ploidy id, e.g. HH NA 2x 1
+  treatment <- regmatches(f, regexpr("(HH)|(HL)|(LL)|(LH)", f))
+  ploidy <- regmatches(f, regexec("(2|4)x", f))[[1]][2]
+  species <- regmatches(f, regexpr("(A|O)", f))
+  id <- regmatches(f, regexec("([0-9]).csv", f))[[1]][2]
+  
+  ## creating new data frame cotaining only parameters we want to investigate
+  info[1,1] <- ETR_max  
+  info[1,2] <- treatment
+  info[1,3] <- ploidy
+  info[1,4] <- species
+  info[1,5] <- df$Date[1]
+  info[1,6] <- id
+  info[1,7] <- df$Fv_Fm[1]
+  info[1,8] <- df$NPQ[9]
+  info[1,9] <- df$qP[9]
+  info[1,10] <- df$ETR[9]
+  info[1,11] <- df$Y[9]
+  info[1,12] <- fit_low_JP$alpha[1]
+  info[1,13] <- fit_low_JP$ek[1]
+  photo_data <- rbind(photo_data, info)
+  
+}
+## changing column names in new data frame
+colnames(photo_data) <- c("ETR_max", "treatment", "ploidy", "species", "date", "id", "Fv_Fm", "NPQ", "qP", "ETR", "Y", "alfa", "Ek")
+
+## changing data type to numeric, for columns which were importend as strings
+photo_data$treatment <- as.factor(photo_data$treatment)
+photo_data$qP <- as.numeric(photo_data$qP)
+photo_data$ETR <- as.numeric(photo_data$ETR)
+photo_data$Y <- as.numeric(photo_data$Y)
+
+## extracting 
+O_data <- subset(photo_data, species == "O")
+O_data$treatment <- relevel(O_data$treatment, ref = "LL")
+
+mod1 <- lm(O_data$Fv_Fm ~ O_data$treatment*O_data$ploidy)
+summary(mod1)
+
