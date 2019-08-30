@@ -1,0 +1,84 @@
+if (!require(ggplot2)) install.packages('ggplot2')
+library(ggplot2)
+if (!require(phytotools)) install.packages('phytotools')
+library(phytotools)
+if (!require(ggpubr)) install.packages('phytotools')
+library(ggpubr)
+
+### Phenotypic traits ###
+
+## 1. Importing data
+
+guard_cells <- read.csv(file = "../Desktop/guard_cell_data.csv")
+guard_cells$Ploidy <- as.factor(guard_cells$Ploidy)
+
+## 2. Extracting data for N. obtusifolia
+No_data <- subset(cygara, Species == "O")
+No_data$Treatment <- relevel(No_data$Treatment, ref = "LL")
+
+## 3. Extracting data for N. attenuata
+Na_data <- subset(cygara, Species == "A")
+Na_data$Treatment <- relevel(Na_data$Treatment, ref = "LL")
+
+## 4. Models for N. attenuata
+
+# number of flowers per plant
+m1 <- glm(Number_flowers ~ Ploidy *Treatment, family="poisson", data= Na_data)
+summary(m1)
+plot(m1)
+
+# number of leaves per plant
+m2 <- glm(Number_leaves ~ Ploidy * Treatment, family="poisson", data= Na_data)
+summary(m2)
+plot(m2)
+
+# length of fully grown leaves
+m3 <- lm(Leaf_length ~ Ploidy * Treatment, data = Na_data)
+summary(m3)
+plot(m3)
+
+# length of peduncles
+m4 <- lm(Peduncle ~ Ploidy * Treatment, data = Na_data)
+summary(m4)
+plot(m4)
+
+## 5. Models for N. obtusifolia
+
+# number of leaves per plant
+m5 <- glm(Number_leaves ~ Ploidy * Treatment, family="poisson", data= No_data)
+summary(m5)
+plot(m5)
+
+# length of fully grown leaves
+m6 <- lm(Leaf_length ~ Ploidy * Treatment, data = No_data)
+summary(m6)
+plot(m6)
+
+## Visualisation for N. attenuata
+
+p12 <- ggplot(Na_data, aes(x=interaction( Treatment, Ploidy), y=Height, fill = Ploidy)) + geom_boxplot() 
++ labs(y = "Length of peduncles [cm]", x = "Treatment") 
++ scale_x_discrete(breaks=c("HH.2","HL.2","LH.2","LL.2","HH.4", "HL.4", "LH.4", "LL.4"), labels=c("H:H", "H:L", "L:H", "L:L", "H:H", "H:L", "L:H", "L:L"))
+p13 <- ggplot(Na_data, aes(x=interaction(Treatment, Ploidy), y=Width, fill = Ploidy)) + geom_boxplot()
++ labs(y = "Length of leaves [cm]", x = "Treatment") 
++ scale_x_discrete(breaks=c("HH.2","HL.2","LH.2","LL.2","HH.4", "HL.4", "LH.4", "LL.4"), labels=c("H:H", "H:L", "L:H", "L:L", "H:H", "H:L", "L:H", "L:L"))
+p14 <- ggplot(Na_data, aes(x=interaction(Treatment, Ploidy), y=Flower, fill = Ploidy)) + geom_boxplot()
++ labs(y = "Number of flowers per plant", x = "Treatment") +
+scale_x_discrete(breaks=c("HH.2","HL.2","LH.2","LL.2","HH.4", "HL.4", "LH.4", "LL.4"), labels=c("H:H", "H:L", "L:H", "L:L", "H:H", "H:L", "L:H", "L:L"))
+p15 <- ggplot(data_pheno_a, aes(x=interaction(Treatment, Ploidy), y=Leaves, fill = Ploidy)) + geom_boxplot() 
++ labs(y = "Number of leaves per plant", x = "Treatment")
++ scale_x_discrete(breaks=c("HH.2","HL.2","LH.2","LL.2","HH.4", "HL.4", "LH.4", "LL.4"), labels=c("H:H", "H:L", "L:H", "L:L", "H:H", "H:L", "L:H", "L:L"))
+
+ggarrange(p13, p15, p12, p14, common.legend = TRUE, legend="right", 
+labels = c("A", "B", "C", "D"), font.label = list(size = 8), label.x = 0.9, label.y = 0.95)
+
+## Visualisation for N. obtusifolia
+
+p13 <- ggplot(No_data, aes(x=interaction(Treatment, Ploidy), y=Width, fill = Ploidy)) + geom_boxplot() +
+labs(y = "Length of leaves [cm]", x = "Treatment") + scale_x_discrete(breaks=c("HH.2","HL.2","LH.2","LL.2","HH.4", "HL.4", "LH.4", "LL.4"), labels=c("H:H", "H:L", "L:H", "L:L", "H:H", "H:L", "L:H", "L:L"))
+p15 <- ggplot(No_data, aes(x=interaction(Treatment, Ploidy), y=Leaves, fill = Ploidy)) + geom_boxplot() + 
+labs(y = "Number of leaves per plant", x = "Treatment") + scale_x_discrete(breaks=c("HH.2","HL.2","LH.2","LL.2","HH.4", "HL.4", "LH.4", "LL.4"), labels=c("H:H", "H:L", "L:H", "L:L", "H:H", "H:L", "L:H", "L:L"))
+
+ggarrange(p13, p15, ncol = 2, nrow = 2, common.legend = TRUE, legend="right", 
+labels = c("A", "B", "C", "D"),font.label = list(size = 8), label.x = 0.9, label.y = 0.95)
+
